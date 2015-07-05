@@ -1,0 +1,133 @@
+<apex:page id="multiSearchPage" controller="MultiSearch" sidebar="true" showChat="false" showHeader="true" >
+	<apex:includeScript value="{!URLFOR($Resource.multiSearchLib, 'js/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.multiSearchLib, 'js/jquery-ui.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.multiSearchLib, 'js/jquery.dataTables.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.multiSearchLib, 'css/jquery-ui.min.css' )}" />
+    <apex:stylesheet value="{!URLFOR($Resource.multiSearchLib, 'css/jquery-ui.structure.min.css' )}" />
+    <apex:stylesheet value="{!URLFOR($Resource.multiSearchLib, 'css/jquery-ui.theme.min.css' )}" />
+    <apex:stylesheet value="{!URLFOR($Resource.multiSearchLib, 'css/jquery.dataTables.min.css' )}" />
+	
+
+	<script type="text/javascript">
+		var j$ = jQuery.noConflict();
+		var table;
+		j$(document).ready(function() {
+			//init();
+			var dataSet = jQuery.parseJSON('{!JSENCODE(wrapperJSON)}');
+        	console.log('dataSet : ' + {!JSENCODE(wrapperJSON)});
+
+			/*****************************************
+			*	Datatable params
+			******************************************/
+			table = j$('.resultTable').dataTable({
+	            "retrieve": true,
+	            "bInfo": false,
+	            "bLengthChange": false,
+	            "bPaginate": true,
+	            "pageLength": 20
+	        }).api();
+
+	        j$("#searchButton").click(function(event) {
+				search();
+			});
+
+			j$("[id$='listObjects']").change(function(event) {
+				updateFieldsList();
+			});
+
+        }); //End ready
+
+        function afterSearching() {
+        	var dataSet = j$.parseJSON('{!JSENCODE(wrapperJSON)}');
+        	console.log('dataSet : ' + dataSet);
+        }
+
+		function init() {
+			/*****************************************
+			*	Datatable params
+			******************************************/
+			table = j$('.resultTable').dataTable({
+	            "retrieve": true,
+	            "bInfo": false,
+	            "bLengthChange": false,
+	            "bPaginate": true,
+	            "pageLength": 20
+	        }).api();
+
+	        j$("#searchButton").click(function(event) {
+				search();
+			});
+
+			j$("[id$='listObjects']").change(function(event) {
+				updateFieldsList();
+			});
+
+		};
+
+	</script>
+		
+	<style type="text/css" media="screen">
+		.blocResult {margin-top: 35px;}
+		.blocSearch {margin: 20px 5px 20px 0px; padding: 5px;}
+		label {font-weight: bold;}
+
+	</style>
+	
+	<apex:PageMessages id="message" />
+    <apex:actionstatus id="status">
+       <apex:facet name="start">
+           <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;
+                  height: 100%;opacity:0.65;width:100%;"> 
+               <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+                   <img class="waitingImage" src="/img/loading.gif" />
+                   <span class="waitingDescription">{!$Label.PROCESSING}</span>
+               </div>
+           </div>
+       </apex:facet>
+    </apex:actionstatus>
+
+	<apex:form >
+	<apex:sectionHeader title="{!$Label.MULTI_SEARCH}" subtitle="{!$Label.HOME}" />
+
+	<apex:pageBlock >
+
+		<!-- BLOC SEARCH -->	
+		<apex:panelGrid columns="2" id="theGrid">
+			<Label>Object Name </Label>
+			<apex:selectList id="listObjects" label="Objects List" value="{!selectedObject}" size="1">
+		     	<apex:selectOptions value="{!allObjetcs}"></apex:selectOptions>
+		    </apex:selectList>
+
+		    <Label>Field Name </Label>
+			<apex:selectList id="listFields" value="{!selectedField}" size="1">
+		     	<apex:selectOptions value="{!allFields}"></apex:selectOptions>
+		    </apex:selectList>
+
+		    <label>Text to search </label>
+		    <apex:inputText id="textResearch" value="{!textResearch}" ></apex:inputText>
+			
+			<!-- <button id="searchButton" type="button">{!$Label.SEARCH}</button> -->
+			<apex:commandButton id="searchButton" action="{!search}" value="Go" />
+		</apex:panelGrid>
+
+		<!-- BLOC SEARCH RESULT -->
+		<apex:outputPanel id="blocResult" layout="block" styleClass="blocResult">
+		{!wrapperJSON}
+		<apex:dataTable value="{!result}" var="item" id="resultTable" styleClass="resultTable" >
+			<apex:column headerValue="Id">
+				<apex:outputLink value="/{!item.id}" target="_blank">{!item.id}</apex:outputLink>
+			</apex:column>
+			<apex:column headerValue="{!selectedField}">
+				{!item.name}
+			</apex:column>
+		</apex:dataTable>
+		</apex:outputPanel>
+
+	</apex:pageBlock>
+
+	<!-- <apex:actionFunction name="search" action="{!search}" rerender="blocResult,message" status="status" oncomplete="init();" /> -->
+	<apex:actionFunction name="updateFieldsList" action="{!updateFieldsList}" rerender="theGrid" status="status" oncomplete="init();" />
+	<apex:actionFunction name="search" action="{!search}" status="status" />
+
+	</apex:form>
+</apex:page>
