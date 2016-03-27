@@ -77,11 +77,10 @@ public with sharing class MultiSearch {
         List<SelectOption> options = new List<SelectOption>();
     
         for(Schema.SObjectType f : gd) {
-            options.add(new SelectOption(f.getDescribe().getName(),f.getDescribe().getLabel()));
+            options.add(new SelectOption(f.getDescribe().getName(),f.getDescribe().getLabel() + ' - ' + f.getDescribe().getName()));
         }
 
-        if(String.isEmpty(selectedObject))
-        selectedObject = options[0].getValue();
+        if(String.isEmpty(selectedObject)) selectedObject = options[0].getValue();
 
         return options;
     }

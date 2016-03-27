@@ -1,0 +1,339 @@
+<apex:page id="objectDescriptor" controller="ObjectDescriptorController" sidebar="true" showHeader="true" >
+	<apex:includeScript value="{!URLFOR($Resource.leibekLibs, 'js/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.leibekLibs, 'js/jquery-ui.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.leibekLibs, 'css/jquery-ui.min.css' )}" />
+    <apex:stylesheet value="{!URLFOR($Resource.leibekLibs, 'css/jquery-ui.structure.min.css' )}" />
+    <apex:stylesheet value="{!URLFOR($Resource.leibekLibs, 'css/jquery-ui.theme.min.css' )}" />
+	
+	<!-- *********************************** -->
+	<!--               SCRIPTS               -->
+	<!-- *********************************** -->
+	<script type="text/javascript" charset="utf-8" >
+		var j$ = jQuery.noConflict();
+		j$(document).ready(function() {
+
+			//list objects change event
+			j$("[id$='listObjects']").change(function(event) {
+				displayObjectFields();
+			});
+
+			//Init
+			init();
+
+		});
+
+		function init() {
+			var fields = [];
+
+			//Hide Query div
+			j$("#query").hide();
+
+			j$("#query").tooltip();
+
+			j$("#query").mouseover(function() {
+				j$("#copyCode").show('slide', {direction: 'right'});
+			})
+			.mouseleave(function() {
+				j$("#copyCode").hide('slide', {direction: 'right'});
+			});
+
+			j$("#copyCode").click(function() {
+				alert("copy");
+				j$("#query").selectText();
+			});
+
+			////////////////////////////
+			//       CheckAll         //
+			////////////////////////////
+			j$("#checkAll").click(function() {
+				if(j$("#checkAll").is(":checked")) {
+					j$("input[name=checkField]").prop('checked', true);
+					var nbChecked = j$("input[name=checkField]:checked").length;
+					j$("input[name=checkField]").each(function() {
+						fields.push(j$(this).parent().parent().find('.fieldName').text());
+					});
+					if(nbChecked != '0') {
+						j$("#query").html('<span id="copyCode" title="Select All"></span><code><b>Select</b> ' + fields.join(", ") + ' <b>From</b> <span class="objectName">' + j$("#objectDetail").find('#objectName').text() + '</span></code>');
+						j$("#query").show();
+					}
+				} else {
+					j$("input[name=checkField]").prop('checked', false);
+					j$("#query").hide();
+				}
+			});
+
+			j$("input[name=checkField]").click(function() {
+				//Select/deselect Check All
+				var nbCheckbox = j$("input[name=checkField]").length;
+				var nbChecked = j$("input[name=checkField]:checked").length;
+				if(!j$(this).prop("checked")) {
+					j$("#checkAll").prop('checked', false);
+				} else {
+					if(nbChecked == nbCheckbox) j$("#checkAll").prop('checked', true);
+				}
+
+				//Buil Query
+				fields = [];
+				j$("input[name=checkField]:checked").each(function() {
+					fields.push(j$(this).parent().parent().find('.fieldName').text());
+				});
+				j$("#query").html('<span id="copyCode" title="Select All"></span><code><b>Select</b> ' + fields.join(", ") + ' <b>From</b> <span class="objectName">' + j$("#objectDetail").find('#objectName').text() + '</span></code>');
+				j$("#query").show();
+				if(nbChecked == '0') j$("#query").hide();
+
+			});
+		}
+
+		jQuery.fn.selectText = function() {
+			var doc = document;
+		   	var element = this[0];
+		   	console.log(this, element);
+		   	if (doc.body.createTextRange) {
+		    	var range = document.body.createTextRange();
+		       	range.moveToElementText(element);
+		       	range.select();
+		   	} else if (window.getSelection) {
+		    	var selection = window.getSelection();        
+		       	var rg = document.createRange();
+		       	rg.selectNodeContents(element);
+		       	selection.removeAllRanges();
+		       	selection.addRange(rg);
+		   	}
+		};
+
+	</script>
+	
+	<!-- *********************************** -->
+	<!--               STYLES                -->
+	<!-- *********************************** -->
+	<style type="text/css" media="screen">
+		#blockObject, #blockFields, #objectDetail {
+			padding: 5px;
+			margin: 5px;
+		}
+		#blockFields table {
+			width: 100%;
+			border: 1px solid #DDD;
+			text-align: left;
+			border-spacing: 1px;
+			background: #FFF none repeat scroll 0% 0%;
+			clear: both;
+			border-radius: 5px;
+		}
+		#blockFields table th {
+			font-weight: normal;
+			padding: 7px 5px;
+			color: #FFF;
+			background: #1D69A3 none repeat scroll 0% 0%;
+			border-bottom: 1px solid #CCC;
+		}
+		#blockFields table th:first-child {
+			border-top-left-radius: 3px;
+		}
+		#blockFields table th:last-child {
+			border-top-right-radius: 3px;
+		}
+		#fieldsTable th:first-child, #fieldsTable th:last-child, #relationshipsTable th:last-child {
+			text-align: center;
+			width: 5%;
+		}
+		#blockFields table tr:nth-child(odd) {
+			background-color: #F6F6F6;
+		}
+		#blockFields table tr:nth-child(even) {
+			background: #FBFBFB none repeat scroll 0% 0%;
+		}
+		#blockFields table td {
+			padding-left: 0.5em;
+			padding: 8px;
+		}
+		#fieldsTable td:first-child, #fieldsTable td:last-child, #relationshipsTable td:last-child {
+			text-align: center;
+		}
+		.drop-cap {
+			text-transform: capitalize;
+		}
+		#objectDetail {
+			border: 1px solid #DDD;
+			border-radius: 5px;
+			width: 98%;
+    		display: inline-block;
+		}
+		#blockObject label, #objectDetail label {
+			font-size: 91%;
+    		font-weight: bold;
+			padding: 3px 10px 3px 0px;
+			color: #333;
+		}
+		#objectDetail label {
+			text-align: right;
+			width: 105px;
+    		display: inline-block;
+		}
+		.title {
+			font-weight: 600;
+    		margin: 15px 0px;
+		}
+		#query {
+			/*font-family: "Consolas","Bitstream Vera Sans Mono","Courier New",Courier,monospace !important;*/
+			width: 98%;
+			padding: 5px;
+			margin: 10px 5px 0px 5px;
+			background-color: #fff;
+			border: 1px solid #DDD;
+			border-radius: 5px;
+			font-size: 12px;
+    		line-height: 1.5em;
+			display: inline-block;
+		}
+		#query b {
+			color: #069;
+			font-weight: 600;
+		}
+		.objectName {
+			color: #CC9393;
+		}
+		#copyCode {
+			display: block;
+    		float: right;
+    		width: 16px;
+		    height: 16px;
+		    background: url(http://www.iconsdb.com/icons/download/caribbean-blue/copy-16.png) no-repeat center center;
+		    cursor: pointer;
+		}
+	</style>
+
+	<apex:PageMessages id="message" />
+	<apex:actionstatus id="status">
+	   <apex:facet name="start">
+	       <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;
+	              height: 100%;opacity:0.65;width:100%;"> 
+	           <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+	               <img class="waitingImage" src="/img/loading.gif" />
+	               <span class="waitingDescription">{!$Label.PROCESSING}</span>
+	           </div>
+	       </div>
+	   </apex:facet>
+	</apex:actionstatus>
+		
+	<apex:form >
+	<apex:sectionHeader title="Object Description" subtitle="{!$Label.HOME}" />
+	
+	<apex:pageBlock >
+		
+		<!-- *********************************** -->
+		<!--          LIST OF OBJECTS            -->
+		<!-- *********************************** -->
+		<div id="blockObject">
+			<Label>Object Name </Label>
+			<apex:selectList id="listObjects" value="{!selectedObject}" size="1">
+			    <apex:selectOptions value="{!allObjetcs}"></apex:selectOptions>
+			</apex:selectList>
+		</div>
+		
+		<!-- *********************************** -->
+		<!--          OBJECT DETAILS             -->
+		<!-- *********************************** -->
+		<apex:outputPanel id="blockObjectDetail" layout="block">
+		<div id="objectDetail">
+		<apex:pageBlockSection columns="3">
+			<apex:pageBlockSectionItem >
+				<apex:outputpanel >
+				<div><label>Object Name </label><span id="objectName">{!objectDescriptor.objectName}</span></div>
+				<div><label>Object Label </label>{!objectDescriptor.objectLabel}</div>
+				<div>
+					<label>isCustom </label>
+					<apex:image value="/img/checkbox_checked.gif" rendered="{!IF(objectDescriptor.isCustom, true, false)}"></apex:image>
+					<apex:image value="/img/checkbox_unchecked.gif" rendered="{!IF(objectDescriptor.isCustom, false, true)}"></apex:image>
+				</div>
+				</apex:outputpanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputPanel >
+				<div><label>Nb Total Fields </label>{!objectDescriptor.nbTotalFields}</div>
+				<div><label>Nb Relationships </label>{!objectDescriptor.nbRelationShips}</div>
+				</apex:outputPanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputPanel >
+				<div><label>Nb Standard Fields </label>{!objectDescriptor.nbStdFields}</div>
+				<div><label>Nb Custom Fields </label>{!objectDescriptor.nbCustomFields}</div>
+				</apex:outputPanel>
+			</apex:pageBlockSectionItem>
+		</apex:pageBlockSection>
+		</div>
+		<div id="query"></div>
+		</apex:outputPanel>
+	
+		<!-- *********************************** -->
+		<!--          LIST OF FIELDS             -->
+		<!-- *********************************** -->
+		<div id="blockFields">
+			<apex:outputPanel id="fieldsPanel" >
+			<div class="title">{!selectedObject} Fields</div>
+			<table id="fieldsTable">
+				<thead>
+					<tr>
+						<th><input id="checkAll" type="checkbox" /></th>
+						<th>Field Label</th>
+						<th>Field Name</th>
+						<th>Field Type</th>
+						<th>isCustom</th>
+					</tr>
+				</thead>
+				<tbody>
+					<apex:repeat value="{!objectDescriptor.fields}" var="item">
+					<tr>
+						<td><input name="checkField" type="checkbox" /></td>
+						<td>{!item.fieldLabel}</td>
+						<td class="fieldName">{!item.fieldName}</td>
+						<td><apex:outputText value="{!item.fieldType}" styleClass="drop-cap" ></apex:outputText><apex:outputText value="({!item.fieldLength})" rendered="{!IF(item.fieldLength > 0, true, false)}" ></apex:outputText></td>
+						<td>
+							<apex:image value="/img/checkbox_checked.gif" rendered="{!IF((item.isCustom), true, false)}"></apex:image>
+                    		<apex:image value="/img/checkbox_unchecked.gif" rendered="{!IF((item.isCustom), false, true)}" ></apex:image>
+						</td>
+					</tr>
+					</apex:repeat>
+				</tbody>
+			</table>
+			
+			<div class="title">{!selectedObject} Relationships</div>
+			<table id="relationshipsTable" style="text-align: left;">
+				<thead>
+					<tr>
+						<th>Child Object</th>
+						<th>Relationship Name</th>
+						<th>Related Field</th>
+						<th>isCascadeDelete</th>
+					</tr>
+				</thead>
+				<tbody>
+					<apex:repeat value="{!objectDescriptor.relationShips}" var="item">
+					<tr>
+						<td>{!item.childObject}</td>
+						<td>{!item.relationShipName}</td>
+						<td>{!item.relatedField}</td>
+						<td>
+							<apex:image value="/img/checkbox_checked.gif" rendered="{!IF((item.isCascadeDelete), true, false)}"></apex:image>
+                    		<apex:image value="/img/checkbox_unchecked.gif" rendered="{!IF((item.isCascadeDelete), false, true)}" ></apex:image>
+                    	</td>
+					</tr>
+					</apex:repeat>
+				</tbody>
+			</table>
+			</apex:outputPanel>
+		</div>
+
+	</apex:pageBlock>
+
+
+
+	<!-- *********************************** -->
+	<!--          ACTION FUNCTIONS           -->
+	<!-- *********************************** -->
+	<apex:actionFunction name="displayObjectFields" action="{!displayObjectFields}" status="status" reRender="fieldsPanel,blockObjectDetail" oncomplete="init()" />
+	</apex:form>
+
+
+
+</apex:page>

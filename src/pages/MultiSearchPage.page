@@ -14,7 +14,7 @@
 		j$(document).ready(function() {
 			//init();
 			var dataSet = jQuery.parseJSON('{!JSENCODE(wrapperJSON)}');
-        	console.log('dataSet : ' + {!JSENCODE(wrapperJSON)});
+        	console.log('dataSet : ' + '{!JSENCODE(wrapperJSON)}');
 
 			/*****************************************
 			*	Datatable params
@@ -62,7 +62,7 @@
 				updateFieldsList();
 			});
 
-		};
+		}
 
 	</script>
 		
@@ -91,7 +91,7 @@
 
 	<apex:pageBlock >
 
-		<!-- BLOC SEARCH -->	
+		<!-- BLOC SEARCH  -->	
 		<apex:panelGrid columns="2" id="theGrid">
 			<Label>Object Name </Label>
 			<apex:selectList id="listObjects" label="Objects List" value="{!selectedObject}" size="1">

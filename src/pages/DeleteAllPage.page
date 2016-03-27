@@ -1,0 +1,132 @@
+<!-- 
+	@author ALK
+	@date 08/09/2015
+	@desc Delete All Data Page 
+ -->
+<apex:page id="deleteAllController" controller="DeleteAllController" sidebar="true" showHeader="true" >
+	<apex:includeScript value="{!URLFOR($Resource.leibekLibs, 'js/jquery.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.leibekLibs, 'js/jquery-ui.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.leibekLibs, 'css/jquery-ui.min.css' )}" />
+    <apex:stylesheet value="{!URLFOR($Resource.leibekLibs, 'css/jquery-ui.structure.min.css' )}" />
+    <apex:stylesheet value="{!URLFOR($Resource.leibekLibs, 'css/jquery-ui.theme.min.css' )}" />
+	
+	<script type="text/javascript" charset="utf-8">
+		var j$ = jQuery.noConflict();
+		j$(document).ready(function() {
+			init();
+		});
+
+		//////////////////////////////////////////
+		// INIT                                 //
+		//////////////////////////////////////////
+		function init() {
+
+			j$("[id$='listObjects']").change(function() {
+  				//alert( this.value );
+  				if(this.value != '0') countRecords();
+			});
+
+			j$("#deleteButton").click(function() {
+				if(j$("[id$='listObjects']").val() != '0') {
+					j$("#dialog-confirm").dialog("open");
+				} else {
+					j$.alert("Before clicking delete, you need to choose an object from list","Alert");
+				}
+				
+			});
+
+			j$("#dialog-confirm").dialog({
+				open: function() {
+                    j$(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:eq(1)').focus(); 
+                },
+				autoOpen: false,
+		    	resizable: false,
+		      	width: 450,
+		      	modal: true,
+		      	buttons: {
+		        	"Delete all data": function() {
+		        		deleteData();
+		          		j$(this).dialog("close");
+		        	},
+		        	Cancel: function() {
+		          		j$(this).dialog("close");
+		        	}
+		      	}
+		    });
+		}
+
+		///////////////////////////////////////////////
+		// Rewrite js alert                          //
+		///////////////////////////////////////////////
+        j$.extend({ alert: function (message, title) {
+            j$("<div></div>").dialog( {
+                buttons: { "Ok": function () { j$(this).dialog("close"); }},
+                close: function (event, ui) { j$(this).remove(); },
+                resizable: false,
+                title: title,
+                modal: true
+            }).text(message);}
+        });
+	</script>
+
+	<style type="text/css">
+		#deleteButton {cursor: pointer;}
+		#blockObject label {font-weight: 600; margin-right: 10px;}
+		#blockObject button {
+		    border: 1px solid #1797c0;
+		    padding: 5px;
+		    text-decoration: none;
+		}
+	</style>
+
+	<apex:actionstatus id="status">
+	   <apex:facet name="start">
+	       <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;
+	              height: 100%;opacity:0.65;width:100%;"> 
+	           <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+	               <img class="waitingImage" src="/img/loading.gif" />
+	               <span class="waitingDescription">Processing ...</span>
+	           </div>
+	       </div>
+	   </apex:facet>
+	</apex:actionstatus>
+
+	
+	<apex:form >
+	<apex:sectionHeader title="Delete All Data" subtitle="HOME" ></apex:sectionHeader>
+	
+	<apex:pageBlock >
+		
+		<!-- *********************************** -->
+        <!--          ERROR/INFO MESSAGES        -->
+        <!-- *********************************** -->
+		<apex:PageMessages id="message" />
+
+		<!-- *********************************** -->
+		<!--          LIST OF OBJECTS            -->
+		<!-- *********************************** -->
+		<div id="blockObject">
+			<Label>Object Name </Label>
+			<apex:selectList id="listObjects" value="{!selectedObject}" size="1">
+			    <apex:selectOptions value="{!allObjetcs}"></apex:selectOptions>
+			</apex:selectList>
+
+			<button id="deleteButton" type="button">Delete all data</button>
+		</div>
+
+
+		<div id="dialog-confirm" title="Alert">
+  			<p><span class="ui-icon ui-icon-alert" style="display: none;"></span>This action will delete 10 000 records of selected object. Are you sure?</p>
+		</div>
+
+	</apex:pageBlock>
+
+
+	<!-- *********************************** -->
+	<!--          ACTION FUNCTIONS           -->
+	<!-- *********************************** -->
+	<apex:actionFunction name="deleteData" action="{!deleteAll}" status="status" reRender="message" oncomplete="init()" />
+	<apex:actionFunction name="countRecords" action="{!countRecords}" status="status" reRender="message" oncomplete="init()" />
+	</apex:form>
+
+</apex:page>
